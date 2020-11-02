@@ -1,0 +1,6 @@
+参考：《UNIX网络编程卷》
+
+1.IO模型：https://www.cnblogs.com/shengguorui/p/11949282.html	 
+
+2.BIO、NIO、AIO：https://blog.csdn.net/m0_38109046/article/details/89449305
+
