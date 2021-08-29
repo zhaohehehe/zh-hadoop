@@ -1,0 +1,37 @@
+1.Hadoop集群配置：
+	1.Read-only default configuration - core-default.xml, hdfs-default.xml, yarn-default.xml and mapred-default.xml.（参见Read-only default configuration.png）
+	2.Site-specific configuration - etc/hadoop/core-site.xml, etc/hadoop/hdfs-site.xml, etc/hadoop/yarn-site.xml and etc/hadoop/mapred-site.xml.（参见/etc/hadoop/*-site.xml）
+	3.Hadoop daemons执行环境以及执行参数配置。（参见/etc/hadoop/*-env.sh）
+		环境变量：例如：export HDFS_NAMENODE_OPTS="-XX:+UseParallelGC -Xmx4g"
+		Daemon	Environment Variable
+		NameNode	HDFS_NAMENODE_OPTS
+		DataNode	HDFS_DATANODE_OPTS
+		Secondary NameNode	HDFS_SECONDARYNAMENODE_OPTS
+		ResourceManager	YARN_RESOURCEMANAGER_OPTS
+		NodeManager	YARN_NODEMANAGER_OPTS
+		WebAppProxy	YARN_PROXYSERVER_OPTS
+		Map Reduce Job History Server	MAPRED_HISTORYSERVER_OPTS
+			HADOOP_PID_DIR
+			HADOOP_LOG_DIR
+			HADOOP_HEAPSIZE_MAX
+			HADOOP_HOME
+2.Hadoop集群架构：
+	1.HDFS daemons are NameNode, SecondaryNameNode, and DataNode. 
+	2.YARN daemons are ResourceManager, NodeManager, and WebAppProxy. 
+	3.If MapReduce is to be used, then the MapReduce Job History Server will also be running. For large installations, these are generally running on separate hosts.
+3.Hadoop Rack Awareness：
+	https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/RackAwareness.html
+	https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html Replica Placement: The First Baby Steps
+	目的：
+		希望不同节点之间的通信能够尽量发生在同一个rack之内，而不是跨rack。
+		为了提高容错能力，namenode节点会尽可能把数据块的副本放到多个rack上，this policy increases the cost of writes。		
+	实现：
+		1.构造树状网络拓扑。外部脚本提供拓扑位置关系。
+			首先，一个重要的假设前提是HDFS运行于一个具有树状网络拓扑结构的集群上：网络集群/data-center/rack/node或者/data-center/rack/switch/node
+			例如集群由多个数据中心组成，每个数据中心里有多个rack，而每个机架上有多台计算机（数据节点）。
+			datanode起动之后会把它的位置信息发给namenode。当namenode收到datanode的位置信息以后，它会先检查网络拓扑中是否已经有这个数据节点的记录。如果有，它会把旧的记录删除，加入新的节点位置信息。
+		2.副本放置（ReplicaPlacement）。通过Topology的结构组织和距离计算，找出最近节点。
+			例如：当发生数据读取的时候，namenode首先检查客户端是否位于集群中。如果是的话，就可以按照由近到远的优先次序决定由哪个datanode向客户端发送它需要的数据块。
+			也就是说，对于拥有同一数据块副本的节点来说，在网络拓扑中距离客户端近的节点会优先响应。
+4.Hadoop Logging:Apache Log4j
+5.Operating the Hadoop Cluster:Hadoop Startup/Shutdown命令。https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html		

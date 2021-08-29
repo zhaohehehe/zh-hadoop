@@ -1,0 +1,33 @@
+1.HDFS Assumptions and Goals:
+	1.Hardware Failure。
+	2.Streaming Data Access。The emphasis is on high throughput of data access rather than low latency of data access。
+		（追求数据访问的高吞吐量而非低延迟。不像POSIX标准那样依赖许多硬件需求来提高速度）
+	3.POSIX imposes many hard requirements that are not needed for applications that are targeted for HDFS. POSIX semantics in a few key areas has been traded to increase data throughput rates.
+	4.Large Data Sets
+	5.Simple Coherency Model：write-once-read-many（WORM）不能重复写入且不允许修改，只能append或者truncate。这种设计也使得高吞吐量成为可能，而且非常适合MapReduce和网络爬虫。
+	6.“Moving Computation is Cheaper than Moving Data”
+		应用的计算在如果在它操作的数据附近会更加高效，尤其数据量非常大的时候。可以减少网络拥堵并增加系统吞吐量。HDFS提供接口移动应用到数据所在的位置进行计算。
+	7.Portability Across Heterogeneous Hardware and Software Platforms
+2.NameNode and DataNodes：
+	1.One NameNode（the arbitrator and repository for all HDFS metadata）:
+		1.执行namespace operations：例如：opening, closing, and renaming files and directories.
+		2.It also determines the mapping of blocks to DataNodes. 
+	2.Many DataNodes：
+		1.A file is split into one or more blocks and these blocks are stored in a set of DataNodes. 一个文件分若干个block存储在所有datanode节点上。
+		2.perform block creation, deletion, and replication upon instruction from the NameNode.
+	
+3.The File System Namespace
+4.Data Replication
+	1.replication factor可以在文件创建时指定，也可以之后修改。
+	2.WORM and have strictly one writer at any time.
+	3.namenode周期性接收来自datanode的a Heartbeat and a Blockreport。
+		Receipt of a Heartbeat implies that the DataNode is functioning properly. 
+		A Blockreport contains a list of all blocks on a DataNode.
+	4.Replica Placement: The First Baby Steps 
+		1.The NameNode通过Hadoop Rack Awareness来determines the rack id。
+		2.Because the NameNode does not allow DataNodes to have multiple replicas of the same block, maximum number of replicas created is the total number of DataNodes at that time.
+		PS：对于某个block来说，副本数超过数据节点数会导致某个节点的副本冗余，没有意义。
+		如果某个block有3个副本，但是
+	5.Replica Selection
+	6.Safemode
+	
